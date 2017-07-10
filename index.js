@@ -1,27 +1,39 @@
-const MWABOX = 166901
-module.exports = function mwaBoxOpener(dispatch){
+const Command = require('command');
+
+module.exports = function boxOpener(dispatch){
+	const command = Command(dispatch)
+	
 	let	cid = null,
 		enabled = false,
 		location = null,
 		timer = null,
+		scanning = false;
+		boxId = 166901, // MWA box as default.
 		inventory = null;
 		
-	dispatch.hook('S_LOGIN', 1, event =>{cid = event.cid})
-	dispatch.hook('C_PLAYER_LOCATION', 1, event =>{location = event})
+	command.add('getbox', () => {
+		scanning = true;
+			command.message('Please open the box you wish to set.');
+	});
 	
-	dispatch.hook('C_CHAT', 1, event => {
-		if(/^<FONT>!mwa<\/FONT>$/i.test(event.message)) {
-			if(enabled = !enabled) {
-				message(' MWA box opener started.')
-				timer = setInterval(openBox,200)
-			}
-			else
-				stop()
-			return false
+	command.add('openbox', () => {
+		if(!enabled){
+			command.message('Opening selected box, use the same command to stop.');
+			timer = setInterval(openBox,200)
 		}
-	})
+	});
 	
-	dispatch.hook('S_INVEN', 3, event =>{
+	command.add('stopbox', () => {
+		clearInterval(timer)
+		enabled = false
+		inventory = null
+		command.message('Box opener stopped.')
+	});
+	
+	dispatch.hook('S_LOGIN', 1, event =>{cid = event.cid});
+	dispatch.hook('C_PLAYER_LOCATION', 1, event =>{location = event});
+	
+	dispatch.hook('S_INVEN', 4, event =>{ //Change this to 5 if EU
 		if(!enabled) return
 
 		if(event.first) inventory = []
@@ -33,17 +45,28 @@ module.exports = function mwaBoxOpener(dispatch){
 			let box = false
 		for(let item of inventory) {
 				if(item.slot < 40) continue 
-				if(item.item == MWABOX) box = true
+				if(item.item == boxId) box = true
 		}
 		if(!box) stop()
 
 			inventory = null
 		}
-	})
+	});
+	
+	dispatch.hook('C_USE_ITEM', 1, event =>{ //Change this to 5 if EU
+		if(!scanning) return
+	
+		if(scanning){
+			boxId = event.item;
+			command.message('Box set to: '+boxId+' If this is not a box try again.');
+			scanning = false;
+		}
+	});
+	
 	function openBox() {
 		dispatch.toServer('C_USE_ITEM', 1, {
 			ownerId: cid,
-			item: MWABOX,
+			item: boxId,
 			id: 0,
 			unk1: 0,
 			unk2: 0,
@@ -61,6 +84,7 @@ module.exports = function mwaBoxOpener(dispatch){
 			unk10: 0,
 			unk11: 1
 		})
+		
 		dispatch.toServer('C_GACHA_TRY', 1,{
 			id:385851
 		})
@@ -69,17 +93,6 @@ module.exports = function mwaBoxOpener(dispatch){
 		clearInterval(timer)
 		enabled = false
 		inventory = null
-		message(' MWA box opener stopped.')
-		}	
-	function message(msg) {
-		dispatch.toClient('S_CHAT', 1, {
-			channel: 24,
-			authorID: 0,
-			unk1: 0,
-			gm: 0,
-			unk2: 0,
-			authorName: '',
-			message: '(Proxy)' + msg
-		})
-	}					
+		command.message('Box opener stopped.')
+		}
 }
