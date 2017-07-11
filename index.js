@@ -33,7 +33,7 @@ module.exports = function boxOpener(dispatch){
 	dispatch.hook('S_LOGIN', 1, event =>{cid = event.cid});
 	dispatch.hook('C_PLAYER_LOCATION', 1, event =>{location = event});
 	
-	dispatch.hook('S_INVEN', 4, event =>{ //Change this to 5 if EU
+	dispatch.hook('S_INVEN', 5, event =>{
 		if(!enabled) return
 
 		if(event.first) inventory = []
