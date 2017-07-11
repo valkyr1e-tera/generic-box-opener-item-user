@@ -53,7 +53,7 @@ module.exports = function boxOpener(dispatch){
 		}
 	});
 	
-	dispatch.hook('C_USE_ITEM', 1, event =>{ //Change this to 5 if EU
+	dispatch.hook('C_USE_ITEM', 1, event =>{
 		if(!scanning) return
 	
 		if(scanning){
