@@ -1,3 +1,5 @@
+<img src=http://i.cubeupload.com/xo9idb.jpg>
+
 # Box-opener
 TERA-proxy module that opens most boxes.
 
