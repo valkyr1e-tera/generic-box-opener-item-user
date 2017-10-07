@@ -8,7 +8,7 @@ module.exports = function boxOpener(dispatch){
 		enabled = false,
 		location = null,
 		timer = null,
-		delay = 200,
+		delay = 1000,
 		statOpened = 0,
 		statStarted = null,
 		scanning = false;
@@ -48,10 +48,10 @@ module.exports = function boxOpener(dispatch){
 	
 	dispatch.hook('S_LOGIN', 1, event =>{cid = event.cid});
 	
+	dispatch.hook('C_PLAYER_LOCATION', 1, event =>{location = event});
+	
 	function load()
 	{
-		hook('C_PLAYER_LOCATION', 1, event =>{location = event});
-		
 		hook('S_INVEN', 5, event =>{
 			if(!enabled) return
 
@@ -155,7 +155,7 @@ module.exports = function boxOpener(dispatch){
 		let m = addZero(d.getMinutes());
 		let s = addZero(d.getSeconds());
 		x.innerHTML = h + ":" + m + ":" + s;
-		command.message('Box opener stopped. Opened: ' + statOpened + ' boxes. Time elapsed: ' + (h + ":" + m + ":" + s) + " per box: " ((timeElapsedMSec / statOpened) / 1000) + " sec");
+		command.message('Box opener stopped. Opened: ' + statOpened + ' boxes. Time elapsed: ' + (h + ":" + m + ":" + s) + ". Per box: " + ((timeElapsedMSec / statOpened) / 1000).toPrecision(2) + " sec");
 		statOpened = 0;
 	}
 	
@@ -168,6 +168,6 @@ module.exports = function boxOpener(dispatch){
 	}
 
 	function hook() {
-		hooks.push(hook(...arguments))
+		hooks.push(dispatch.hook(...arguments))
 	}
 }
