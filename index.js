@@ -8,7 +8,7 @@ module.exports = function boxOpener(dispatch){
 		enabled = false,
 		location = null,
 		timer = null,
-		delay = 1000,
+		delay = 1500,
 		statOpened = 0,
 		statStarted = null,
 		scanning = false;
@@ -93,8 +93,9 @@ module.exports = function boxOpener(dispatch){
 		});
 		
 		hook('S_SYSTEM_MESSAGE_LOOT_ITEM', 1, event => {
-					clearTimeout(timer);
-					openBox();
+			statOpened++;
+			clearTimeout(timer);
+			openBox();
 		});
 		
 		hook('S_SYSTEM_MESSAGE', 1, event => {
@@ -107,8 +108,6 @@ module.exports = function boxOpener(dispatch){
 	
 	function openBox() 
 	{
-		statOpened++;
-		
 		dispatch.toServer('C_USE_ITEM', 1, {
 			ownerId: cid,
 			item: boxId,
@@ -147,14 +146,13 @@ module.exports = function boxOpener(dispatch){
 		unload();
 		enabled = false;
 		let d = new Date();
-        let t = d.getTime();
+		let t = d.getTime();
 		let timeElapsedMSec = t-statStarted;
 		d = new Date(1970, 0, 1); // Epoch
 		d.setMilliseconds(timeElapsedMSec);
 		let h = addZero(d.getHours());
 		let m = addZero(d.getMinutes());
 		let s = addZero(d.getSeconds());
-		x.innerHTML = h + ":" + m + ":" + s;
 		command.message('Box opener stopped. Opened: ' + statOpened + ' boxes. Time elapsed: ' + (h + ":" + m + ":" + s) + ". Per box: " + ((timeElapsedMSec / statOpened) / 1000).toPrecision(2) + " sec");
 		statOpened = 0;
 	}
