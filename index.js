@@ -1,4 +1,5 @@
 const Command = require('command');
+const sysmsg = require('tera-data-parser').sysmsg;
 
 module.exports = function boxOpener(dispatch){
 	const command = Command(dispatch)
@@ -99,7 +100,7 @@ module.exports = function boxOpener(dispatch){
 		});
 		
 		hook('S_SYSTEM_MESSAGE', 1, event => {
-            if(event.message == "@1242")  // SMT_ITEM_MIX_NEED_METERIAL
+            if(event.message == "@" + sysmsg.map.name['SMT_ITEM_MIX_NEED_METERIAL'])  // SMT_ITEM_MIX_NEED_METERIAL // 1242
 			{
                 stop();
             }
