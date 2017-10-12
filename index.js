@@ -9,7 +9,7 @@ module.exports = function boxOpener(dispatch){
 		enabled = false,
 		location = null,
 		timer = null,
-		delay = 1500,
+		delay = 5000,
 		statOpened = 0,
 		statStarted = null,
 		scanning = false;
@@ -100,11 +100,18 @@ module.exports = function boxOpener(dispatch){
 		});
 		
 		hook('S_SYSTEM_MESSAGE', 1, event => {
-            if(event.message == "@" + sysmsg.map.name['SMT_ITEM_MIX_NEED_METERIAL'])  // SMT_ITEM_MIX_NEED_METERIAL // 1242
+            if((event.message == "@" + sysmsg.maps.get(dispatch.base.protocolVersion).name.get('SMT_ITEM_MIX_NEED_METERIAL')) || (event.message == "@" + sysmsg.maps.get(dispatch.base.protocolVersion).name.get('SMT_CANT_CONVERT_NOW')))  // 1242 || 1776
 			{
                 stop();
             }
         });
+		
+		hook('S_GACHA_START', 1, event => {
+			dispatch.toServer('C_GACHA_TRY', 1,{
+				id:event.id
+			})
+        });
+			
 	}
 	
 	function openBox() 
