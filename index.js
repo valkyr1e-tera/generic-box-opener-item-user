@@ -8,6 +8,7 @@ module.exports = function boxOpener(dispatch){
 		cid = null,
 		enabled = false,
 		gacha_detected = false,
+		isLooting = false,
 		location = null,
 		timer = null,
 		delay = 5000,
