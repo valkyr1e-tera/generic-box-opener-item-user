@@ -7,44 +7,43 @@ module.exports = function boxOpener(dispatch){
 	let	hooks = [],
 		cid = null,
 		enabled = false,
+		gacha_detected = false,
 		location = null,
 		timer = null,
 		delay = 5000,
+		useDelay = false,
 		statOpened = 0,
 		statStarted = null,
 		scanning = false;
 		boxId = 166901, // MWA box as default.
 		inventory = null;
 		
-	command.add('getbox', () => {
-		scanning = true;
-		load();
-		command.message('Please open the box you wish to set.');
-	});
-	
-	command.add('openbox', () => {
+	command.add('box', () => {
 		if(!enabled)
 		{
-			var d = new Date();
-			statStarted = d.getTime();
-			enabled = true;
+			scanning = true;
 			load();
-			command.message('Opening selected box, use the same command to stop.');
-			openBox();
+			command.message('Please open the box you wish to set and it will auto-open all of it. Then use the same command to stop.');
 		}
 		else
 		{
 			stop();
 		}
 	});
-	
-	command.add('stopbox', () => {
-		stop();
-	});
-	
+		
 	command.add('boxdelay', (arg) => {
-		delay = parseInt(arg);
-		command.message("setting box opening delay to " + delay);
+		if(arg === "0")
+		{
+			useDelay = false;
+			delay = 5000;
+			command.message("turning OFF minimum box opening delay, enjoy the speed");
+		}
+		else
+		{
+			useDelay = true;
+			delay = parseInt(arg);
+			command.message("turning ON minimum box opening delay and setting it to " + (delay / 1000) + " sec");
+		}
     });
 	
 	dispatch.hook('S_LOGIN', 1, event =>{cid = event.cid});
@@ -87,16 +86,33 @@ module.exports = function boxOpener(dispatch){
 		
 			if(scanning){
 				boxId = event.item;
-				command.message('Box set to: '+boxId+'');
+				command.message('Box set to: '+boxId+', proceeding to mass-open it with a minimum ' + (delay / 1000) + ' sec delay');
 				scanning = false;
-				unload();
+				
+				let d = new Date();
+				statStarted = d.getTime();
+				enabled = true;
+				load();
+				openBox();
 			}
 		});
 		
 		hook('S_SYSTEM_MESSAGE_LOOT_ITEM', 1, event => {
-			statOpened++;
-			clearTimeout(timer);
-			openBox();
+			if(!useDelay && !gacha_detected)
+			{
+				statOpened++;
+				clearTimeout(timer);
+				openBox();
+			}
+		});
+		
+		hook('S_GACHA_END', 1, event => {
+			if(!useDelay)
+			{
+				statOpened++;
+				clearTimeout(timer);
+				openBox();
+			}
 		});
 		
 		hook('S_SYSTEM_MESSAGE', 1, event => {
@@ -107,6 +123,7 @@ module.exports = function boxOpener(dispatch){
         });
 		
 		hook('S_GACHA_START', 1, event => {
+			gacha_detected = true;
 			dispatch.toServer('C_GACHA_TRY', 1,{
 				id:event.id
 			})
@@ -138,6 +155,10 @@ module.exports = function boxOpener(dispatch){
 		});
 		
 		timer = setTimeout(openBox,delay);
+		if(useDelay)
+		{
+			statOpened++;
+		}
 	}
 	
 	function addZero(i) 
@@ -150,19 +171,28 @@ module.exports = function boxOpener(dispatch){
 
 	function stop() 
 	{
-		clearTimeout(timer);
 		unload();
-		enabled = false;
-		let d = new Date();
-		let t = d.getTime();
-		let timeElapsedMSec = t-statStarted;
-		d = new Date(1970, 0, 1); // Epoch
-		d.setMilliseconds(timeElapsedMSec);
-		let h = addZero(d.getHours());
-		let m = addZero(d.getMinutes());
-		let s = addZero(d.getSeconds());
-		command.message('Box opener stopped. Opened: ' + statOpened + ' boxes. Time elapsed: ' + (h + ":" + m + ":" + s) + ". Per box: " + ((timeElapsedMSec / statOpened) / 1000).toPrecision(2) + " sec");
-		statOpened = 0;
+		if(scanning)
+		{
+			scanning = false;
+			command.message('Scanning aborted');
+		}
+		else
+		{
+			clearTimeout(timer);
+			enabled = false;
+			gacha_detected = false;
+			let d = new Date();
+			let t = d.getTime();
+			let timeElapsedMSec = t-statStarted;
+			d = new Date(1970, 0, 1); // Epoch
+			d.setMilliseconds(timeElapsedMSec);
+			let h = addZero(d.getHours());
+			let m = addZero(d.getMinutes());
+			let s = addZero(d.getSeconds());
+			command.message('Box opener stopped. Opened: ' + statOpened + ' boxes. Time elapsed: ' + (h + ":" + m + ":" + s) + ". Per box: " + ((timeElapsedMSec / statOpened) / 1000).toPrecision(2) + " sec");
+			statOpened = 0;
+		}
 	}
 	
 	function unload() {
