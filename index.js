@@ -19,7 +19,7 @@ module.exports = function boxOpener(dispatch){
 		inventory = null;
 		
 	command.add('box', () => {
-		if(!enabled)
+		if(!enabled && !scanning)
 		{
 			scanning = true;
 			load();
