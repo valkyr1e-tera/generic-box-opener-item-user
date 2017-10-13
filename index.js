@@ -54,6 +54,8 @@ module.exports = function boxOpener(dispatch){
 	{
 		hook('S_INVEN', 5, event =>{
 			if(!enabled) return
+			
+			isLooting = false; // S_INVEN comes only after all S_SYSTEM_MESSAGE_LOOT_ITEM were received
 
 			if(event.first) inventory = []
 			else if(!inventory) return
@@ -98,8 +100,9 @@ module.exports = function boxOpener(dispatch){
 		});
 		
 		hook('S_SYSTEM_MESSAGE_LOOT_ITEM', 1, event => {
-			if(!useDelay && !gacha_detected)
+			if(!useDelay && !gacha_detected && !isLooting)
 			{
+				isLooting = true;
 				statOpened++;
 				clearTimeout(timer);
 				openBox();
