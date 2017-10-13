@@ -24,7 +24,7 @@ module.exports = function boxOpener(dispatch){
 		{
 			scanning = true;
 			load();
-			command.message('Please open the box you wish to set and it will auto-open all of it. Then use the same command to stop.');
+			command.message('Please normally open a box now and the script will continue opening it');
 		}
 		else
 		{
@@ -37,13 +37,17 @@ module.exports = function boxOpener(dispatch){
 		{
 			useDelay = false;
 			delay = 5000;
-			command.message("turning OFF minimum box opening delay, enjoy the speed");
+			command.message("Turning OFF minimum box opening delay, enjoy the speed");
 		}
-		else
+		else if(!isNaN(arg))
 		{
 			useDelay = true;
 			delay = parseInt(arg);
-			command.message("turning ON minimum box opening delay and setting it to " + (delay / 1000) + " sec");
+			command.message("Minimum box opening delay is set to: " + (delay / 1000) + " sec");
+		}
+		else
+		{
+			command.message("Minimum box opening delay is set to: " + (useDelay ? (delay / 1000) + " sec" : "no delay" ));
 		}
     });
 	
@@ -56,7 +60,7 @@ module.exports = function boxOpener(dispatch){
 		hook('S_INVEN', 5, event =>{
 			if(!enabled) return
 			
-			isLooting = false; // S_INVEN comes only after all S_SYSTEM_MESSAGE_LOOT_ITEM were received
+			isLooting = false; // S_INVEN comes only after all S_SYSTEM_MESSAGE_LOOT_ITEM
 
 			if(event.first) inventory = []
 			else if(!inventory) return
@@ -89,7 +93,7 @@ module.exports = function boxOpener(dispatch){
 		
 			if(scanning){
 				boxId = event.item;
-				command.message('Box set to: '+boxId+', proceeding to mass-open it with a minimum ' + (delay / 1000) + ' sec delay');
+				command.message("Box set to: "+boxId+", proceeding to auto-open it with "  + (useDelay ? "a minimum " + (delay / 1000) + " sec delay" : "no delay" ));
 				scanning = false;
 				
 				let d = new Date();
@@ -179,7 +183,7 @@ module.exports = function boxOpener(dispatch){
 		if(scanning)
 		{
 			scanning = false;
-			command.message('Scanning aborted');
+			command.message('Scanning for a box is aborted');
 		}
 		else
 		{
