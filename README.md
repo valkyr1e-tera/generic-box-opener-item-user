@@ -7,7 +7,7 @@ TERA-proxy module that mass-opens boxes or mass-uses items.
 Type `!box` then open your inventory and right click the box you wish to open - now it will continue opening
 `!boxdelay 3000` - set minimum delay in MS for box opening, 3000 means 3 sec
 
-<img src=http://i.cubeupload.com/fTP4oE.jpg>
+<img src=http://i.cubeupload.com/Sr7lEW.jpg>
 
 ## Requires
 https://github.com/pinkipi/command
