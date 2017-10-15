@@ -100,7 +100,7 @@ module.exports = function boxOpener(dispatch){
 				statStarted = d.getTime();
 				enabled = true;
 				load();
-				openBox();
+				timer = setTimeout(openBox,delay);
 			}
 		});
 		
