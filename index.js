@@ -51,9 +51,9 @@ module.exports = function boxOpener(dispatch){
 		}
     });
 	
-	dispatch.hook('S_LOGIN', 1, event =>{cid = event.cid});
+	dispatch.hook('S_LOGIN', (dispatch.base.majorPatchVersion >= 67) ? 10 : 9, event =>{cid = event.cid});
 	
-	dispatch.hook('C_PLAYER_LOCATION', 1, event =>{location = event});
+	dispatch.hook('C_PLAYER_LOCATION', 2, event =>{location = event});
 	
 	function load()
 	{
