@@ -5,8 +5,8 @@ module.exports = function boxOpener(dispatch){
 	const command = Command(dispatch)
 	
 	let	hooks = [],
-		cid = null,
 		enabled = false,
+		boxEvent = null,
 		gacha_detected = false,
 		isLooting = false,
 		location = null,
@@ -51,13 +51,11 @@ module.exports = function boxOpener(dispatch){
 		}
     });
 	
-	dispatch.hook('S_LOGIN', 10, event =>{cid = event.gameId});
-	
-	dispatch.hook('C_PLAYER_LOCATION', 2, event =>{location = event});
+	dispatch.hook('C_PLAYER_LOCATION', 4, event =>{location = event});
 	
 	function load()
 	{
-		hook('S_INVEN', 5, event =>{
+		hook('S_INVEN', 12, event =>{
 			if(!enabled) return
 			
 			isLooting = false; // S_INVEN comes only after all S_SYSTEM_MESSAGE_LOOT_ITEM
@@ -88,10 +86,11 @@ module.exports = function boxOpener(dispatch){
 			}
 		});
 		
-		hook('C_USE_ITEM', 1, event =>{
+		hook('C_USE_ITEM', 3, event =>{
 			if(!scanning) return
 		
 			if(scanning){
+				boxEvent = event;
 				boxId = event.item;
 				command.message("Box set to: "+boxId+", proceeding to auto-open it with "  + (useDelay ? "a minimum " + (delay / 1000) + " sec delay" : "no delay" ));
 				scanning = false;
@@ -138,29 +137,12 @@ module.exports = function boxOpener(dispatch){
         });
 			
 	}
-	
+		
 	function openBox() 
 	{
-		dispatch.toServer('C_USE_ITEM', 1, {
-			ownerId: cid,
-			item: boxId,
-			id: 0,
-			unk1: 0,
-			unk2: 0,
-			unk3: 0,
-			unk4: 1,
-			unk5: 0,
-			unk6: 0,
-			unk7: 0,
-			x: location.x1,
-			y: location.y1,
-			z: location.z1,
-			w: location.w,
-			unk8: 0,
-			unk9: 0,
-			unk10: 0,
-			unk11: 1
-		});
+		boxEvent.loc = location.loc;
+		boxEvent.w = location.w;
+		dispatch.toServer('C_USE_ITEM', 3, boxEvent);
 		
 		timer = setTimeout(openBox,delay);
 		if(useDelay)
