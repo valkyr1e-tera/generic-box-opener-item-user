@@ -107,13 +107,9 @@ module.exports = function boxOpener(dispatch){
 			{
 				isLooting = true;
 				statOpened++;
-				if(timer)
-				{
-					clearTimeout(timer);
-				}
 				if(!useDelay)
 				{
-					timer = null;
+					clearTimeout(timer);
 					openBox();
 				}
 			}
@@ -121,13 +117,9 @@ module.exports = function boxOpener(dispatch){
 		
 		hook('S_GACHA_END', 1, event => {
 				statOpened++;
-				if(timer)
-				{
-					clearTimeout(timer);
-				}
 				if(!useDelay)
 				{
-					timer = null;
+					clearTimeout(timer);
 					openBox();
 				}
 		});
