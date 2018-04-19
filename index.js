@@ -1,5 +1,4 @@
 const Command = require('command');
-const sysmsg = require('tera-data-parser').sysmsg;
 
 module.exports = function boxOpener(dispatch){
 	const command = Command(dispatch)
@@ -11,7 +10,7 @@ module.exports = function boxOpener(dispatch){
 		isLooting = false,
 		location = null,
 		timer = null,
-		delay = 5000,
+		delay = 6000,
 		useDelay = false,
 		statOpened = 0,
 		statStarted = null,
@@ -36,7 +35,7 @@ module.exports = function boxOpener(dispatch){
 		if(arg === "0")
 		{
 			useDelay = false;
-			delay = 5000;
+			delay = 6000;
 			command.message("Turning OFF minimum box opening delay, enjoy the speed");
 		}
 		else if(!isNaN(arg))
@@ -71,13 +70,14 @@ module.exports = function boxOpener(dispatch){
 				for(let item of inventory) 
 				{
 					if(item.slot < 40) continue 
-					if(item.item == boxId)
+					if(item.id == boxId)
 					{
 						box = true
 					}
 				}
 				if(!box) 
 				{
+					command.message("You ran out of boxes, stopping");
 					stop();
 				}
 				inventory.splice(0,inventory.length)
@@ -91,42 +91,54 @@ module.exports = function boxOpener(dispatch){
 		
 			if(scanning){
 				boxEvent = event;
-				boxId = event.item;
+				boxId = event.id;
 				command.message("Box set to: "+boxId+", proceeding to auto-open it with "  + (useDelay ? "a minimum " + (delay / 1000) + " sec delay" : "no delay" ));
 				scanning = false;
 				
 				let d = new Date();
 				statStarted = d.getTime();
 				enabled = true;
-				load();
 				timer = setTimeout(openBox,delay);
 			}
 		});
 		
 		hook('S_SYSTEM_MESSAGE_LOOT_ITEM', 1, event => {
-			if(!useDelay && !gacha_detected && !isLooting)
+			if(!gacha_detected && !isLooting)
 			{
 				isLooting = true;
 				statOpened++;
-				clearTimeout(timer);
-				openBox();
+				if(timer)
+				{
+					clearTimeout(timer);
+				}
+				if(!useDelay)
+				{
+					timer = null;
+					openBox();
+				}
 			}
 		});
 		
 		hook('S_GACHA_END', 1, event => {
-			if(!useDelay)
-			{
 				statOpened++;
-				clearTimeout(timer);
-				openBox();
-			}
+				if(timer)
+				{
+					clearTimeout(timer);
+				}
+				if(!useDelay)
+				{
+					timer = null;
+					openBox();
+				}
 		});
 		
 		hook('S_SYSTEM_MESSAGE', 1, event => {
-            if((event.message == "@" + sysmsg.maps.get(dispatch.base.protocolVersion).name.get('SMT_ITEM_MIX_NEED_METERIAL')) || (event.message == "@" + sysmsg.maps.get(dispatch.base.protocolVersion).name.get('SMT_CANT_CONVERT_NOW')))  // 1242 || 1776
+			const msg = dispatch.base.parseSystemMessage(event.message);
+			if(msg.id === 'SMT_ITEM_MIX_NEED_METERIAL' || msg.id === 'SMT_CANT_CONVERT_NOW')
 			{
-                stop();
-            }
+				command.message("Box can not be opened anymore, stopping");
+				stop();
+			}
         });
 		
 		hook('S_GACHA_START', 1, event => {
@@ -137,7 +149,7 @@ module.exports = function boxOpener(dispatch){
         });
 			
 	}
-		
+	
 	function openBox() 
 	{
 		boxEvent.loc = location.loc;
@@ -145,10 +157,6 @@ module.exports = function boxOpener(dispatch){
 		dispatch.toServer('C_USE_ITEM', 3, boxEvent);
 		
 		timer = setTimeout(openBox,delay);
-		if(useDelay)
-		{
-			statOpened++;
-		}
 	}
 	
 	function addZero(i) 
