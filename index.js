@@ -10,9 +10,10 @@ module.exports = function boxOpener(dispatch){
 		isLooting = false,
 		location = null,
 		timer = null,
-		delay = 6000,
+		delay = 5000,
 		useDelay = false,
 		statOpened = 0,
+		statUsed = 0,
 		statStarted = null,
 		scanning = false;
 		boxId = 166901, // MWA box as default.
@@ -35,7 +36,7 @@ module.exports = function boxOpener(dispatch){
 		if(arg === "0")
 		{
 			useDelay = false;
-			delay = 6000;
+			delay = 5000;
 			command.message("Turning OFF minimum box opening delay, enjoy the speed");
 		}
 		else if(!isNaN(arg))
@@ -147,7 +148,10 @@ module.exports = function boxOpener(dispatch){
 		boxEvent.loc = location.loc;
 		boxEvent.w = location.w;
 		dispatch.toServer('C_USE_ITEM', 3, boxEvent);
-		
+		if(useDelay)
+		{
+			statUsed++;	// counter for used items other than boxes
+		}
 		timer = setTimeout(openBox,delay);
 	}
 	
@@ -172,6 +176,10 @@ module.exports = function boxOpener(dispatch){
 			clearTimeout(timer);
 			enabled = false;
 			gacha_detected = false;
+			if(useDelay && statOpened == 0)
+			{
+				statOpened = statUsed;
+			}
 			let d = new Date();
 			let t = d.getTime();
 			let timeElapsedMSec = t-statStarted;
@@ -182,6 +190,7 @@ module.exports = function boxOpener(dispatch){
 			let s = addZero(d.getSeconds());
 			command.message('Box opener stopped. Opened: ' + statOpened + ' boxes. Time elapsed: ' + (h + ":" + m + ":" + s) + ". Per box: " + ((timeElapsedMSec / statOpened) / 1000).toPrecision(2) + " sec");
 			statOpened = 0;
+			statUsed = 0;
 		}
 	}
 	
