@@ -1,6 +1,5 @@
 {
 	"disableAutoUpdate": false,
 	"options": { "niceName": "<font color='#FDD017'>Box</font>" },
-	"servers": ["https://raw.githubusercontent.com/Owyn/generic-box-opener-item-user/master/"],
-	"supportUrl": "https://github.com/Owyn/generic-box-opener-item-user/issues"
+	"servers": ["https://raw.githubusercontent.com/valkyr1e-tera/generic-box-opener-item-user/master/"]
 }
