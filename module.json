@@ -1,5 +1,11 @@
 {
 	"disableAutoUpdate": false,
-	"options": { "niceName": "<font color='#FDD017'>Box</font>" },
+	"name": "generic-box-opener-item-user",
+	"author": "valkyr1e",
+	"description": "mass-opens boxes (any kind of boxes (gatcha or chests or whatever gives items) or mass-uses items (potions, bandages, whatever you'd like)",
+	"version": "1.0",
+	"options": {
+		"niceName": "<font color='#FDD017'>Box</font>"
+	},
 	"servers": ["https://raw.githubusercontent.com/valkyr1e-tera/generic-box-opener-item-user/master/"]
 }
