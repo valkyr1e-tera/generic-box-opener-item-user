@@ -1,20 +1,20 @@
-module.exports = function boxOpener(mod){	
+module.exports = function BoxOpener(mod){	
   let	hooks = [],
-  enabled = false,
-  boxEvent = null,
-  gacha_detected = false,
-  isLooting = false,
-  location = null,
-  timer = null,
-  delay = 5500,
-  useDelay = false,
-  statOpened = 0,
-  statUsed = 0,
-  statStarted = null,
-  scanning = false,
-  boxId = 166901, // MWA box as default.
-  inventory = null
-  
+      enabled = false,
+      boxEvent = null,
+      gacha_detected = false,
+      isLooting = false,
+      location = null,
+      timer = null,
+      delay = 5500,
+      useDelay = false,
+      statOpened = 0,
+      statUsed = 0,
+      statStarted = null,
+      scanning = false,
+      boxId = 166901, // MWA box as default.
+      inventory = null
+
   mod.command.add('box', () => {
     if (!enabled && !scanning) {
       scanning = true
@@ -24,7 +24,7 @@ module.exports = function boxOpener(mod){
       stop()
     }
   })
-  
+
   mod.command.add('boxdelay', (arg) => {
     if (arg === "0") {
       useDelay = false
@@ -38,9 +38,9 @@ module.exports = function boxOpener(mod){
       mod.command.message(`Minimum box opening delay is set to: ${useDelay ? `${delay / 1000} sec` : 'no delay'}`)
     }
   })
-  
-  mod.hook('C_PLAYER_LOCATION', 5, event => {location = event})
-  
+
+  mod.hook('C_PLAYER_LOCATION', 5, event => { location = event })
+
   function load() {
     hook('S_INVEN', 16, event =>{
       if(!enabled)
@@ -58,7 +58,7 @@ module.exports = function boxOpener(mod){
       
       if (!event.more) {
         let box = false
-        for (let item of inventory) {
+        for (const item of inventory) {
           if (item.slot < 40)
             continue 
           if (item.id == boxId)
@@ -73,23 +73,24 @@ module.exports = function boxOpener(mod){
         inventory = null
       }
     })
-    
+
     hook('C_USE_ITEM', 3, event => {
-      if(!scanning) return
-      
-      if(scanning){
+      if (!scanning)
+        return
+
+      if (scanning){
         boxEvent = event
         boxId = event.id
-        mod.command.message("Box set to: "+boxId+", proceeding to auto-open it with "  + (useDelay ? "a minimum " + (delay / 1000) + " sec delay" : "no delay" ))
+        mod.command.message(`Box set to: ${boxId}, proceeding to auto-open it with ${useDelay ? `a minimum ${delay / 1000} sec delay` : 'no delay'}`)
         scanning = false
-        
-        let d = new Date()
+
+        const d = new Date()
         statStarted = d.getTime()
         enabled = true
-        timer = setTimeout(openBox,delay)
+        timer = setTimeout(openBox, delay)
       }
     })
-    
+
     hook('S_SYSTEM_MESSAGE_LOOT_ITEM', 1, () => {
       if (!gacha_detected && !isLooting) {
         isLooting = true
@@ -100,7 +101,7 @@ module.exports = function boxOpener(mod){
         }
       }
     })
-    
+
     hook('S_GACHA_END', 1, () => {
       statOpened++
       if (!useDelay) {
@@ -108,41 +109,36 @@ module.exports = function boxOpener(mod){
         openBox()
       }
     })
-    
+
     hook('S_SYSTEM_MESSAGE', 1, event => {
       const msg = mod.base.parseSystemMessage(event.message)
-      if(msg.id === 'SMT_ITEM_MIX_NEED_METERIAL' || msg.id === 'SMT_CANT_CONVERT_NOW') {
+      if (['SMT_ITEM_MIX_NEED_METERIAL', 'SMT_CANT_CONVERT_NOW'].includes(msg.id)) {
         mod.command.message('Box can not be opened anymore, stopping')
         stop()
       }
     })
-    
+
     hook('S_GACHA_START', 1, event => {
       gacha_detected = true
-      mod.toServer('C_GACHA_TRY', 1,{
-        id:event.id
-      })
+      mod.toServer('C_GACHA_TRY', 1, { id:event.id })
     })
   }
-  
+
   function openBox() {
     boxEvent.loc = location.loc
     boxEvent.w = location.w
     mod.toServer('C_USE_ITEM', 3, boxEvent)
-    if(useDelay)
-    {
+    if (useDelay)
       statUsed++	// counter for used items other than boxes
-    }
     timer = setTimeout(openBox,delay)
   }
-  
+
   function addZero(i) {
-    if (i < 10) {
+    if (i < 10)
       i = "0" + i
-    }
     return i
   }
-  
+
   function stop() {
     unload()
     if (scanning) {
@@ -152,32 +148,35 @@ module.exports = function boxOpener(mod){
       clearTimeout(timer)
       enabled = false
       gacha_detected = false
-      if(useDelay && statOpened == 0)
-      {
+
+      if (useDelay && statOpened === 0)
         statOpened = statUsed
-      }
+
       let d = new Date()
-      let t = d.getTime()
-      let timeElapsedMSec = t-statStarted
+      const t = d.getTime()
+      const timeElapsedMSec = t - statStarted
       d = new Date(1970, 0, 1) // Epoch
       d.setMilliseconds(timeElapsedMSec)
-      let h = addZero(d.getHours())
-      let m = addZero(d.getMinutes())
-      let s = addZero(d.getSeconds())
+      const h = addZero(d.getHours())
+      const m = addZero(d.getMinutes())
+      const s = addZero(d.getSeconds())
+
       mod.command.message(`Box opener stopped. Opened: ${statOpened} boxes.`)
-      mod.command.message(`Time elapsed: ${h}:${m}:${s}. Per box: ${((timeElapsedMSec / statOpened) / 1000).toPrecision(2)} sec`)
+      mod.command.message(`Time elapsed: ${h}:${m}:${s}. Per box: ${(timeElapsedMSec / statOpened / 1000).toPrecision(2)} sec`)
+
       statOpened = 0
       statUsed = 0
     }
   }
-  
+
   function unload() {
-    if(hooks.length) {
-      for(let h of hooks) mod.unhook(h)
+    if (hooks.length) {
+      for (const hook of hooks)
+        mod.unhook(hook)
       hooks = []
     }
   }
-  
+
   function hook() {
     hooks.push(mod.hook(...arguments))
   }

@@ -1,7 +1,7 @@
 {
 	"disableAutoUpdate": false,
 	"name": "generic-box-opener-item-user",
-	"author": "valkyr1e",
+	"author": "valkyr1e / Owyn",
 	"description": "mass-opens boxes (any kind of boxes (gatcha or chests or whatever gives items) or mass-uses items (potions, bandages, whatever you'd like)",
 	"version": "1.0",
 	"options": {
