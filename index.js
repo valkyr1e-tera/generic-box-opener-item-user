@@ -42,7 +42,7 @@ module.exports = function BoxOpener(mod){
   mod.hook('C_PLAYER_LOCATION', 5, event => { location = event })
 
   function load() {
-    hook('S_INVEN', 16, event =>{
+    hook('S_INVEN', 17, event =>{
       if(!enabled)
         return
       
